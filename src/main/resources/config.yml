@@ -1,0 +1,49 @@
+reload: "&a¡Has recargado la configuracíon del plugin!"
+permission: "&c¡No tienes permiso para usar este comando!"
+
+join-enabled-autopickup: true
+join-enabled-autosmelt: true
+
+AutoPickup:
+  enabled: "&a&lAUTOPICKUP &fHa sido activado correctamente!"
+  disabled: "&a&lAUTOPICKUP &fHa sido desactivado!"
+
+AutoSmelt:
+  enabled: "&e&lAUTOSMELT &fHa sido activado correctamente!"
+  disabled: "&e&lAUTOSMELT &fHa sido desactivado!"
+
+Full-inventory:
+  drop-items: "&c&l¡FULL INVENTORY! &ftus items han caido al suelo!"
+  no-received: "&c&l¡FULL INVENTORY! &fLibera espacios para recibir items"
+
+options:
+  Full-inventory: drop #drop or no-received
+  AutoPickup-enabled-messages: true
+  AutoPickup-disabled-messages: true
+  AutoSmelt-enabled-messages: true
+  AutoSmelt-disabled-messages: true
+
+permissions:
+  AutoPickup: rautopickup.use.autopickup
+  AutoSmelt: rautopickup.use.autosmelt
+
+'1':
+  custom-pickup-items:
+    enabled: false
+    material:
+      - DIAMOND_BLOCK
+      - EMERALD_BLOCK
+      - IRON_BLOCK
+    actions:
+      - "[CONSOLE_COMMAND] give %player% diamond 1"
+      - "[MESSAGE] &aYou have received &ex1 diamond"
+'2':
+  custom-pickup-items:
+    enabled: false
+    material:
+      - DIAMOND_ORE
+      - EMERALD_ORE
+      - IRON_ORE
+    actions:
+      - "[CONSOLE_COMMAND] give %player% diamond 1"
+      - "[MESSAGE] &aYou have received &ex1 diamond"
