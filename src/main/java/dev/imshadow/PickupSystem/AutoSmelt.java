@@ -86,7 +86,7 @@ public class AutoSmelt {
             Material ore = Material.valueOf(oreName);
             Material result = Material.valueOf(resultName);
             smeltableItems.put(ore, result);
-            // Nota: La información de la data se manejará en métodos específicos para versiones antiguas
+            // La información de la data se manejará en métodos específicos para versiones antiguas
         } catch (IllegalArgumentException e) {
             // Material no disponible en esta versión, ignorar silenciosamente
         }
