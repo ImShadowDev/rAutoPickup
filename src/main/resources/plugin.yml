@@ -1,0 +1,34 @@
+name: rAutoPickup
+author: ImShadow
+main: dev.imshadow.rAutoPickup
+version: 1.8.0
+api-version: 1.13
+description: Simple AutoPickup plugin
+
+commands:
+  autopickup:
+    description: Enables or disables autopickup
+    usage: /autopickup
+    aliases: [ap]
+  autosmelt:
+    description: Turn autosmelt on or off
+    usage: /autosmelt
+    aliases: [as]
+  rautopickup:
+    description: Reload the plugin settings
+    usage: /rautopickup
+    aliases: [rap]
+
+permissions:
+  rautopickup.use.autopickup:
+    description: Allows the use of autopickup
+    default: op
+  rautopickup.use.autosmelt:
+    description: Allows the use of autosmelt
+    default: op
+  rautopickup.admin:
+    description: Allows you to reload the plugin configuration
+    default: op
+
+softdepend:
+  - CataMines

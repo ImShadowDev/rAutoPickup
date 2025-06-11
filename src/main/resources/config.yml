@@ -1,0 +1,101 @@
+######################################################################################
+#                            _             _____    _          _                     #
+#            /\             | |           |  __ \  (_)        | |                    #
+#  _ __     /  \     _   _  | |_    ___   | |__) |  _    ___  | | __  _   _   _ __   #
+# | '__|   / /\ \   | | | | | __|  / _ \  |  ___/  | |  / __| | |/ / | | | | | '_ \  #
+# | |     / ____ \  | |_| | | |_  | (_) | | |      | | | (__  |   <  | |_| | | |_) | #
+# |_|    /_/    \_\  \__,_|  \__|  \___/  |_|      |_|  \___| |_|\_\  \__,_| | .__/  #
+#                                                                            | |     #
+#                                                                            |_|     #
+######################################################################################
+
+#CONFIG
+reload: "&a¡You have reloaded the plugin settings!"
+permission: "&c¡You do not have permission to use this command!"
+mined-blocks: "&7You have mined &e%current%&7/&e%required% &7blocks" #for the required blocks of custom-pickup-items
+
+join-enabled-autopickup: true
+join-enabled-autosmelt: true
+
+AutoPickup:
+  enabled: "&a&lAUTOPICKUP &fIt has been activated successfully!"
+  disabled: "&a&lAUTOPICKUP &fIt has been deactivated!"
+
+AutoSmelt:
+  enabled: "&e&lAUTOSMELT &fIt has been activated successfully!"
+  disabled: "&e&lAUTOSMELT &fIt has been deactivated!"
+
+Full-inventory:
+  drop-items: "&c&l¡FULL INVENTORY! &fyour items have fallen to the ground!"
+  no-received: "&c&l¡FULL INVENTORY! &fFree up slots to receive items"
+
+FORTUNE-BLOCKS:
+  - "DIAMOND_ORE"
+  - "GOLD_ORE"
+  - "IRON_ORE"
+  - "EMERALD_ORE"
+  - "COAL_ORE"
+  - "LAPIS_ORE"
+  - "REDSTONE_ORE"
+  - "QUARTZ_ORE"
+  - "GLOWSTONE"
+  #more blocks...
+  #- "*"  # ALL BLOCKS WITH FORTUNE
+
+options:
+  Full-inventory: drop #drop or no-received
+  AutoPickup-enabled-messages: true
+  AutoPickup-disabled-messages: true
+  AutoSmelt-enabled-messages: true
+  AutoSmelt-disabled-messages: true
+  Mined-Blocks-enabled-messages: true
+
+
+permissions:
+  AutoPickup: rautopickup.use.autopickup
+  AutoSmelt: rautopickup.use.autosmelt
+
+disable-blocks-autopickup:
+  - "DIAMOND_BLOCK"
+  - "BEACON"
+
+disable-blocks-autosmelt:
+  - "IRON_ORE"
+  - "GOLD_ORE"
+
+#ACTIONS:
+#[CONSOLE_COMMAND] eco give %player% 100
+#[SOUND] LEVEL_UP 1.0 1.0
+#[PARTICLE] FLAME
+#[TITLE] TITLE | SUBTITLE - [TITLE] &b&lDIAMOND FOUND! | &7YOU FOUND A DIAMOND
+#[GIVE] MATERIAL AMOUNT name:NameItem enchant:ENCHANTMENT:LEVEL lore:LORE - To add more enchantment or lore add another line of lore in the same give
+
+'1':
+  custom-pickup-items:
+    enabled: false
+    material:
+      - DIAMOND_BLOCK
+      - EMERALD_BLOCK
+      - IRON_BLOCK
+    actions:
+      - "[CONSOLE_COMMAND] give %player% diamond 1"
+      - "[MESSAGE] &aYou have received &ex1 diamond"
+'2':
+  custom-pickup-items:
+    enabled: false
+    material:
+      - STONE
+    requerid-blocks: 100
+    actions:
+      - "[GIVE] DIAMOND 1"
+      - "[MESSAGE] &aYou have received &ex1 Diamond"
+'3':
+  custom-pickup-items:
+    enabled: false
+    material:
+      - DIAMOND_ORE
+    requerid-blocks: 1000
+    actions:
+      - "[GIVE] DIAMOND_SWORD 1 name:&6&lLEGENDARY SWORD enchant:DAMAGE_ALL:5 lore:&7- &eLegendary sword taken from a king's tomb"
+      - "[MESSAGE] &aYou have received &ex1 Legendary Sword"
+      - "[TITLE] &6&lLEGENDARY SWORD! | &7YOU FOUND A SUPER SWORD"
