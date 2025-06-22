@@ -162,31 +162,61 @@ public class AutoPickup {
             }
         }
 
-        // Manejar items normales
-        boolean inventoryFull = false;
-        String fullInventoryOption = plugin.getConfigManager().getConfig().getString("options.Full-inventory", "drop");
+        // Manejar items normales usando la lógica consistente
+        handleInventoryDrops(player, drops, block.getLocation());
+        return true;
+    }
 
-        for (ItemStack item : drops) {
-            if (player.getInventory().firstEmpty() == -1) {
-                // Inventario lleno
-                inventoryFull = true;
-                if (fullInventoryOption.equalsIgnoreCase("drop")) {
-                    player.getWorld().dropItemNaturally(block.getLocation(), item);
-                    continue;
-                } else if (fullInventoryOption.equalsIgnoreCase("no-received")) {
-                    continue;
-                }
-            }
-
-            // Añadir item al inventario del jugador
-            player.getInventory().addItem(item);
+    /**
+     * Maneja los drops considerando si el inventario está lleno
+     * Misma lógica que en BlockBreakListener para mantener consistencia
+     */
+    private void handleInventoryDrops(Player player, List<ItemStack> drops, org.bukkit.Location dropLocation) {
+        if (drops == null || drops.isEmpty()) {
+            return;
         }
 
+        String fullInventoryOption = plugin.getConfigManager().getConfig().getString("options.Full-inventory", "drop");
+        boolean inventoryFull = false;
+        boolean hasEmptySlot = player.getInventory().firstEmpty() != -1;
+
+        for (ItemStack item : drops) {
+            if (!hasEmptySlot) {
+                inventoryFull = true;
+
+                if (fullInventoryOption.equalsIgnoreCase("drop")) {
+                    // Dropear el item en la ubicación del bloque
+                    player.getWorld().dropItemNaturally(dropLocation, item);
+                } else if (fullInventoryOption.equalsIgnoreCase("no-received")) {
+                    // No hacer nada, el item se pierde
+                    continue;
+                }
+            } else {
+                // Intentar añadir el item al inventario
+                java.util.HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(item);
+
+                // Si quedaron items sin añadir, el inventario se llenó
+                if (!leftover.isEmpty()) {
+                    hasEmptySlot = false;
+                    inventoryFull = true;
+
+                    // Manejar los items que no cupieron
+                    for (ItemStack leftoverItem : leftover.values()) {
+                        if (fullInventoryOption.equalsIgnoreCase("drop")) {
+                            player.getWorld().dropItemNaturally(dropLocation, leftoverItem);
+                        }
+                        // Si es "no-received", simplemente no hacer nada (se pierden)
+                    }
+                }
+            }
+        }
+
+        // Enviar mensaje si el inventario estaba lleno
         if (inventoryFull) {
             String message = "";
             if (fullInventoryOption.equalsIgnoreCase("drop")) {
                 message = plugin.getConfigManager().getConfig().getString("Full-inventory.drop-items", "");
-            } else {
+            } else if (fullInventoryOption.equalsIgnoreCase("no-received")) {
                 message = plugin.getConfigManager().getConfig().getString("Full-inventory.no-received", "");
             }
 
@@ -194,8 +224,6 @@ public class AutoPickup {
                 player.sendMessage(colorText(message));
             }
         }
-
-        return true;
     }
 
     private void executeCustomActions(Player player, int key) {
@@ -291,16 +319,10 @@ public class AutoPickup {
                     item.setItemMeta(meta);
                 }
 
-                // Añadir item al inventario o dropear
-                if (player.getInventory().firstEmpty() == -1) {
-                    player.getWorld().dropItemNaturally(player.getLocation(), item);
-                    String message = plugin.getConfigManager().getConfig().getString("Full-inventory.drop-items", "");
-                    if (message != null && !message.isEmpty()) {
-                        player.sendMessage(colorText(message));
-                    }
-                } else {
-                    player.getInventory().addItem(item);
-                }
+                // Usar la lógica consistente de manejo de inventario
+                List<ItemStack> giveItems = new ArrayList<>();
+                giveItems.add(item);
+                handleInventoryDrops(player, giveItems, player.getLocation());
             }
         } catch (Exception e) {
             plugin.getLogger().warning("Error executing GIVE action: " + e.getMessage());
