@@ -52,6 +52,23 @@ public class BlockBreakListener implements Listener {
     }
 
     /**
+     * Método seguro para colorear texto
+     */
+    private String colorText(String text) {
+        if (text == null) return "";
+
+        try {
+            // Intentar usar la clase CC si está disponible
+            Class<?> ccClass = Class.forName("dev.imshadow.utils.CC");
+            java.lang.reflect.Method colorMethod = ccClass.getMethod("color", String.class);
+            return (String) colorMethod.invoke(null, text);
+        } catch (Exception e) {
+            // Fallback: usar ChatColor directamente
+            return org.bukkit.ChatColor.translateAlternateColorCodes('&', text);
+        }
+    }
+
+    /**
      * Carga la configuración de bloques deshabilitados desde config.yml
      */
     public void loadDisabledBlocksConfig() {
@@ -335,16 +352,8 @@ public class BlockBreakListener implements Listener {
                     }
                 }
 
-                // Añadir los items al inventario del jugador
-                for (ItemStack item : processedDrops) {
-                    if (player.getInventory().firstEmpty() == -1) {
-                        // Inventario lleno, dropeamos el item
-                        player.getWorld().dropItemNaturally(block.getLocation(), item);
-                    } else {
-                        // Añadimos al inventario
-                        player.getInventory().addItem(item);
-                    }
-                }
+                // Manejar inventario lleno correctamente
+                handleInventoryDrops(player, processedDrops, block.getLocation());
 
                 // Establecer el bloque a aire después de procesarlo
                 block.setType(Material.AIR);
@@ -368,13 +377,7 @@ public class BlockBreakListener implements Listener {
                     // Fallback: procesar como bloque normal
                     try {
                         Collection<ItemStack> fallbackDrops = getBlockDrops(block, handItem);
-                        for (ItemStack item : fallbackDrops) {
-                            if (player.getInventory().firstEmpty() == -1) {
-                                player.getWorld().dropItemNaturally(block.getLocation(), item);
-                            } else {
-                                player.getInventory().addItem(item);
-                            }
-                        }
+                        handleInventoryDrops(player, new ArrayList<>(fallbackDrops), block.getLocation());
                         block.setType(Material.AIR);
                     } catch (Exception fallbackError) {
                         plugin.getLogger().severe("Critical error in fallback processing: " + fallbackError.getMessage());
@@ -393,19 +396,71 @@ public class BlockBreakListener implements Listener {
                 // Si cancelamos el evento pero algo falló, intentar un procesamiento básico
                 try {
                     Collection<ItemStack> emergencyDrops = getBlockDrops(block, handItem);
-                    for (ItemStack item : emergencyDrops) {
-                        if (player.getInventory().firstEmpty() == -1) {
-                            player.getWorld().dropItemNaturally(block.getLocation(), item);
-                        } else {
-                            player.getInventory().addItem(item);
-                        }
-                    }
+                    handleInventoryDrops(player, new ArrayList<>(emergencyDrops), block.getLocation());
                     block.setType(Material.AIR);
                 } catch (Exception emergencyError) {
                     // Si incluso el procesamiento de emergencia falla, deshocer la cancelación
                     event.setCancelled(false);
                     plugin.getLogger().severe("Emergency processing failed, allowing normal Minecraft behavior");
                 }
+            }
+        }
+    }
+
+    /**
+     * Maneja los drops considerando si el inventario está lleno
+     */
+    private void handleInventoryDrops(Player player, List<ItemStack> drops, org.bukkit.Location dropLocation) {
+        if (drops == null || drops.isEmpty()) {
+            return;
+        }
+
+        String fullInventoryOption = plugin.getConfigManager().getConfig().getString("options.Full-inventory", "drop");
+        boolean inventoryFull = false;
+        boolean hasEmptySlot = player.getInventory().firstEmpty() != -1;
+
+        for (ItemStack item : drops) {
+            if (!hasEmptySlot) {
+                inventoryFull = true;
+
+                if (fullInventoryOption.equalsIgnoreCase("drop")) {
+                    // Dropear el item en la ubicación del bloque
+                    player.getWorld().dropItemNaturally(dropLocation, item);
+                } else if (fullInventoryOption.equalsIgnoreCase("no-received")) {
+                    // No hacer nada, el item se pierde
+                    continue;
+                }
+            } else {
+                // Intentar añadir el item al inventario
+                java.util.HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(item);
+
+                // Si quedaron items sin añadir, el inventario se llenó
+                if (!leftover.isEmpty()) {
+                    hasEmptySlot = false;
+                    inventoryFull = true;
+
+                    // Manejar los items que no cupieron
+                    for (ItemStack leftoverItem : leftover.values()) {
+                        if (fullInventoryOption.equalsIgnoreCase("drop")) {
+                            player.getWorld().dropItemNaturally(dropLocation, leftoverItem);
+                        }
+                        // Si es "no-received", simplemente no hacer nada (se pierden)
+                    }
+                }
+            }
+        }
+
+        // Enviar mensaje si el inventario estaba lleno
+        if (inventoryFull) {
+            String message = "";
+            if (fullInventoryOption.equalsIgnoreCase("drop")) {
+                message = plugin.getConfigManager().getConfig().getString("Full-inventory.drop-items", "");
+            } else if (fullInventoryOption.equalsIgnoreCase("no-received")) {
+                message = plugin.getConfigManager().getConfig().getString("Full-inventory.no-received", "");
+            }
+
+            if (message != null && !message.isEmpty()) {
+                player.sendMessage(colorText(message));
             }
         }
     }
